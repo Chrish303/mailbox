@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+ 
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+ 
+generator client {
+  provider = "prisma-client-js"
+}
+ 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+ 
+ 
+model User {
+  id            Int          @id @default(autoincrement())
+  username      String       @unique
+  email         String       @unique
+  password      String
+  mailboxes     Mailbox[]
+  messages      Message[]    @relation("UserMessages")
+  MessageSender Message[]    @relation("SenderMessage")
+  MessageTo     Message[]    @relation("MessageToUser")
+  MessageCc     Message?     @relation("MessageCcUser", fields: [messageId], references: [id])
+  messageId     Int?
+  draft         draft[]
+  attachments   Attachment[]
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  @@map("user")
+}
+ 
+model Mailbox {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  mailboxName String
+  user        User      @relation(fields: [userId], references: [id])
+  messages    Message[] @relation("MailboxMessages")
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+ 
+  @@index([userId])
+  @@map("mailbox")
+}
+ 
+model Message {
+  id          Int          @id @default(autoincrement())
+  userId      Int
+  mailboxId   Int
+  subject     String?
+  body        String
+  readAt      DateTime?
+  user        User         @relation("UserMessages", fields: [userId], references: [id])
+  mailbox     Mailbox      @relation("MailboxMessages", fields: [mailboxId], references: [id])
+  sender      User?        @relation("SenderMessage", fields: [senderId], references: [id])
+  senderId    Int?
+  to          User?        @relation("MessageToUser", fields: [toId], references: [id])
+  toId        Int
+  cc          User[]       @relation("MessageCcUser")
+  Parent      Message?     @relation("ParentMessage", fields: [parentId], references: [id])
+  parentId    Int?
+  replies     Message[]    @relation("ReplayMessage")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  Message     Message[]    @relation("ParentMessage")
+  Messages    Message?     @relation("ReplayMessage", fields: [messageId], references: [id])
+  messageId   Int?
+  draft       draft[]
+  attachments Attachment[]
+ 
+  @@index([userId])
+  @@index([mailboxId])
+  @@index([parentId])
+  @@index([toId])
+  @@index([senderId])
+  @@map("message")
+}
+ 
+model draft {
+  id        Int       @id @default(autoincrement())
+  subject   String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  message   Message?  @relation(fields: [messageId], references: [id])
+  messageId Int
+ 
+  @@map("draft")
+}
+ 
+model Attachment {
+  id        Int     @id @default(autoincrement())
+  fileName  String
+  mimeType  String
+  data      Bytes
+  userId    Int?
+  user      User?   @relation(fields: [userId], references: [id])
+  messageId Int
+  message   Message @relation(fields: [messageId], references: [id])
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  @@index([messageId])
+  @@map("attachment")
+}

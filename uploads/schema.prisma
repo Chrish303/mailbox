@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id        Int       @id @default(autoincrement())
+  name      String
+  Company   Company[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("owner")
+}
+
+model Company {
+  id        Int        @id @default(autoincrement())
+  name      String
+  owner_id  Int
+  owner     Owner      @relation(fields: [owner_id], references: [id])
+  Employee  Employee[]
+  project   project[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("company")
+}
+
+model Employee {
+  id        Int       @id @default(autoincrement())
+  name      String
+  phone     String
+  salary    Int
+  companyId Int
+  company   Company   @relation(fields: [companyId], references: [id])
+  projectId Int?
+  project   project?  @relation(fields: [projectId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Profile   Profile[]
+
+  @@map("employee")
+}
+
+model project {
+  id              Int     @id @default(autoincrement())
+  name            String
+  type            String
+  estematedAmount Int
+  companyId       Int
+  company         Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Employee  Employee[]
+
+  @@map("project")
+}
+
+model Profile {
+  id               Int      @id @default(autoincrement())
+  image            String
+  email            String
+  emergencyContact String
+  bloodGroup       String
+  dateOfBirth      String
+  employee         Employee @relation(fields: [employeeId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  employeeId       Int
+
+  @@map("profile")
+}
