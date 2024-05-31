@@ -74,7 +74,7 @@ type Attachment {
   id: Int!
   fileName: String!
   mimeType: String!
-  data: Bytes!
+  data: String!
   userId: Int
   user: User
   messageId: Int!

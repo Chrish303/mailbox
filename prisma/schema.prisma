@@ -98,7 +98,7 @@ model Attachment {
   id        Int     @id @default(autoincrement())
   fileName  String
   mimeType  String
-  data      Bytes
+  data      String
   userId    Int?
   user      User?   @relation(fields: [userId], references: [id])
   messageId Int

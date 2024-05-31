@@ -121,6 +121,7 @@ const resolvers = {
       
               // Read the file content
               const fileData = await fsPromises.readFile(filePath);
+              const base64Data = fileData.toString('base64'); 
       
               // Create a new attachment in the database
               const newAttachment = await prisma.attachment.create({
@@ -129,7 +130,7 @@ const resolvers = {
                       mimeType: mimetype,
                       userId: userId ? parseInt(userId) : null,
                       messageId: parseInt(messageId),
-                      data: fileData,
+                      data: base64Data,
                   },
               });
       
